@@ -11,7 +11,9 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -45,6 +47,22 @@ public class BadIOGUI {
         canvas.add(write, BorderLayout.CENTER);
         frame.setContentPane(canvas);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        /*
+         * ex 01.01
+         */
+        final JPanel internalCanvas = new JPanel();
+        internalCanvas.setLayout(new BoxLayout(internalCanvas, BoxLayout.X_AXIS));
+        canvas.add(internalCanvas);
+        internalCanvas.add(write);
+        
+        /*
+         * ex 01.02
+         */
+        final JButton read = new JButton("Read the file");
+        internalCanvas.add(read);
+        
+
         /*
          * Handlers
          */
@@ -66,6 +84,25 @@ public class BadIOGUI {
                 }
             }
         });
+
+        /*
+         * ex 01.02 and 01.03
+         */
+        read.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    final List<String> lines = Files.readAllLines(new File(PATH).toPath());
+                    for (final String line : lines) {
+                        System.out.println(line);
+                    }
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(frame, e, "Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                }
+            }
+
+        });
     }
 
     private void display() {
@@ -81,6 +118,7 @@ public class BadIOGUI {
         final int sw = (int) screen.getWidth();
         final int sh = (int) screen.getHeight();
         frame.setSize(sw / PROPORTION, sh / PROPORTION);
+        frame.pack();
         /*
          * Instead of appearing at (0,0), upper left corner of the screen, this
          * flag makes the OS window manager take care of the default positioning
