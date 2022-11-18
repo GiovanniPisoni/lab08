@@ -48,7 +48,7 @@ public final class SimpleGUI {
                 final List<String> history = controller.getStirngsHistory();
                 for (final String print : history) {
                     txtArea.append(print);
-                    txtArea.append("/n");
+                    txtArea.append(" \n ");
                 }
             }
 
