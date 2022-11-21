@@ -1,24 +1,29 @@
 package it.unibo.mvc;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  */
 public final class DrawNumberApp implements DrawNumberViewObserver {
-    private static final int MIN = 0;
-    private static final int MAX = 100;
-    private static final int ATTEMPTS = 10;
+    private int MIN;
+    private int MAX;
+    private int ATTEMPTS;
+    private static final String PATH = "config.yml";
 
     private final DrawNumber model;
     private final List<DrawNumberView> views;
+    
 
     /**
      * @param views
      *            the views to attach
      */
-    public DrawNumberApp(final DrawNumberView... views) {
+    public DrawNumberApp(final DrawNumberView... views) throws IOException, Exception{
         /*
          * Side-effect proof
          */
@@ -26,6 +31,24 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
         for (final DrawNumberView view: views) {
             view.setObserver(this);
             view.start();
+        }
+        try (var input = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(PATH)))) {
+           for (var line = input.readLine(); line != null; line = input.readLine()) {
+                final String [] splitted = line.split(":");
+                if (splitted.length == 2) {
+                    if (splitted[0].contains("minimum")) {
+                        MIN = Integer.parseInt(splitted[1].trim()); // TRIM SERVE PER TOGLIERE GLI SPAZI BIANCHI PRIMA E DOPO DELLA PAROLA PRESDA IN QUESTIONE
+                    } else if (splitted[0].contains("maximum")) {
+                        MAX = Integer.parseInt(splitted[1].trim());
+                    } else if (splitted[0].contains("attempts")) {
+                        ATTEMPTS = Integer.parseInt(splitted[1].trim());
+                    } else {
+                        throw new Exception("No max, min or attempts");
+                    }
+                } else {
+                    throw new IOException("Error whit reading config file");
+                }
+           }
         }
         this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
     }
@@ -65,8 +88,9 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      *            ignored
      * @throws FileNotFoundException 
      */
-    public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+    public static void main(final String... args) throws FileNotFoundException, IOException, Exception {
+        new DrawNumberApp(new DrawNumberViewImpl(), new DrawNumberViewImpl(),
+                          new PrintStreamView("outputs.log") , new PrintStreamView(System.out));
     }
 
 }
